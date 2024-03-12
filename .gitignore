@@ -1,0 +1,9 @@
+node_modules/
+lerna-debug.log
+npm-debug.log
+packages/*/lib
+.idea
+uploads
+dataset
+model/facenet_pytorch
+__pycache__
