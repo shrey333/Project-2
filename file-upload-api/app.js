@@ -15,8 +15,8 @@ const __dirname = path.resolve();
 
 const app = express();
 const port = 8000;
-const s3Client = new S3Client({});
-const sqsClient = new SQSClient({});
+const s3Client = new S3Client({ region: "us-east-1" });
+const sqsClient = new SQSClient({ region: "us-east-1" });
 const inBucketName = "1229892289-in-bucket";
 const reqQueueUrl =
   "https://sqs.us-east-1.amazonaws.com/381491829413/1229892289-req-queue";
