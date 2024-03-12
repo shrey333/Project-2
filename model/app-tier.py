@@ -5,7 +5,8 @@ from face_recognition import face_match
 from pathlib import Path
 
 # Create SQS client
-sqs = boto3.client("sqs")
+sqs = boto3.client("sqs", region_name="us-east-1")
+s3 = boto3.client("s3")
 
 # SQS queue URLs
 req_queue_url = "https://sqs.us-east-1.amazonaws.com/381491829413/1229892289-req-queue"
@@ -38,7 +39,7 @@ while True:
             sqs.delete_message(QueueUrl=req_queue_url, ReceiptHandle=receipt_handle)
 
             # Access the image file from S3
-            s3 = boto3.client("s3")
+
             response = s3.get_object(
                 Bucket="1229892289-in-bucket",
                 Key=message["Body"],
