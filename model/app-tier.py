@@ -30,6 +30,7 @@ while True:
         if "Messages" in response:
             # Process the first message
             message = response["Messages"][0]
+            print("Received message:", message["Body"])
             correlation_id = message["MessageAttributes"]["CorrelationId"][
                 "StringValue"
             ]
@@ -67,6 +68,7 @@ while True:
                         },
                     },
                 )
+                print("Sent message:", response["MessageId"])
 
             except Exception as e:
                 # Handle errors related to face recognition
