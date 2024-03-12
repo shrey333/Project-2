@@ -5,6 +5,4 @@ packages/*/lib
 .idea
 uploads
 dataset
-model/facenet_pytorch/data
-model/facenet_pytorch/custom
 __pycache__
