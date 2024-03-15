@@ -1,7 +1,7 @@
 import boto3
 import json
 from botocore.exceptions import ClientError
-from face_recognition import face_match
+from .face_recognition import face_match
 from pathlib import Path
 
 # Create SQS client
@@ -19,25 +19,21 @@ while True:
         # Receive message from SQS queue
         response = sqs.receive_message(
             QueueUrl=req_queue_url,
-            AttributeNames=["SentTimestamp"],
             MaxNumberOfMessages=1,
             MessageAttributeNames=["All"],
-            VisibilityTimeout=0,
-            WaitTimeSeconds=0,
+            VisibilityTimeout=20,
+            WaitTimeSeconds=20,
         )
 
         # Check if there are any messages
         if "Messages" in response:
             # Process the first message
             message = response["Messages"][0]
-            print("Received message:", message["Body"])
+
             correlation_id = message["MessageAttributes"]["CorrelationId"][
                 "StringValue"
             ]
             receipt_handle = message["ReceiptHandle"]
-
-            # Delete the processed message from the queue
-            sqs.delete_message(QueueUrl=req_queue_url, ReceiptHandle=receipt_handle)
 
             # Access the image file from S3
 
@@ -68,7 +64,10 @@ while True:
                         },
                     },
                 )
-                print("Sent message:", response["MessageId"])
+
+                # Delete the processed message from the queue
+                sqs.delete_message(QueueUrl=req_queue_url, ReceiptHandle=receipt_handle)
+                time.wait(10)
 
             except Exception as e:
                 # Handle errors related to face recognition

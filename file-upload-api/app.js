@@ -33,6 +33,7 @@ const createUploadsFolderIfNotExists = (req, res, next) => {
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+let cache = [];
 
 app.post(
   "/",
@@ -69,10 +70,10 @@ app.post(
         })
       )
       .then((data) => {
-        console.log("Message sent to SQS", data);
+        // console.log("Message sent to SQS", data);
       })
       .catch((error) => {
-        console.log("Error sending message to SQS", error);
+        // console.log("Error sending message to SQS", error);
       });
 
     try {
@@ -81,30 +82,35 @@ app.post(
           QueueUrl: respQueueUrl,
           MessageAttributeNames: ["All"],
           MaxNumberOfMessages: 1,
+          VisibilityTimeout: 20,
           WaitTimeSeconds: 20, // Long-polling to reduce API calls
         };
 
         const data = await sqsClient.send(new ReceiveMessageCommand(params));
-        if (data.Messages) {
-          for (const message of data.Messages) {
-            const respCorrelationId =
-              message.MessageAttributes.CorrelationId.StringValue;
 
-            if (respCorrelationId === CorrelationId) {
-              await sqsClient.send(
-                new DeleteMessageCommand({
-                  QueueUrl: respQueueUrl,
-                  ReceiptHandle: message.ReceiptHandle,
-                })
-              );
-              return res.send(message.Body);
-            }
-          }
+        if (data.Messages) {
+          cache = [...cache, ...data.Messages];
+        }
+        const isMsg = cache.find(
+          (message) =>
+            message.MessageAttributes.CorrelationId.StringValue ===
+            CorrelationId
+        );
+
+        if (isMsg) {
+          await sqsClient.send(
+            new DeleteMessageCommand({
+              QueueUrl: respQueueUrl,
+              ReceiptHandle: isMsg.ReceiptHandle,
+            })
+          );
+          res.send(isMsg.Body);
+          break;
         }
       }
     } catch (err) {
       console.error("Error polling for requests:", err);
-      return res.status(500).send("Error polling for requests");
+      res.status(500).send("Error polling for requests");
     }
 
     // return res.send("File uploaded to S3 and message sent to SQS");
