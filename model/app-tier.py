@@ -1,7 +1,8 @@
 import boto3
 import json
+import time
 from botocore.exceptions import ClientError
-from .face_recognition import face_match
+from face_recognition import face_match
 from pathlib import Path
 
 # Create SQS client
@@ -67,7 +68,7 @@ while True:
 
                 # Delete the processed message from the queue
                 sqs.delete_message(QueueUrl=req_queue_url, ReceiptHandle=receipt_handle)
-                time.wait(10)
+                time.sleep(10)
 
             except Exception as e:
                 # Handle errors related to face recognition
