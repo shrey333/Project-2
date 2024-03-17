@@ -106,7 +106,7 @@ const stopInstances = async () => {
   const params = {
     InstanceIds: instances,
   };
-  await client.send(new TerminateInstancesCommand(params));
+  await ec2Client.send(new TerminateInstancesCommand(params));
 };
 
 app.post(
