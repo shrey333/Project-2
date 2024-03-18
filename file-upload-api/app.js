@@ -97,16 +97,25 @@ const startInstance = async (num) => {
     },
   };
 
-  const command = new RunInstancesCommand(instanceParams);
-  const response = await ec2Client.send(command);
-  instances.push(response.Instances[0].InstanceId);
+  try {
+    const command = new RunInstancesCommand(instanceParams);
+    const response = await ec2Client.send(command);
+    instances.push(response.Instances[0].InstanceId);
+  } catch (error) {
+    console.error("Error starting instance:", error);
+  }
 };
 
 const stopInstances = async () => {
   const params = {
     InstanceIds: instances,
   };
-  await ec2Client.send(new TerminateInstancesCommand(params));
+
+  try {
+    await ec2Client.send(new TerminateInstancesCommand(params));
+  } catch (error) {
+    console.error("Error stopping instances:", error);
+  }
 };
 
 app.post(
